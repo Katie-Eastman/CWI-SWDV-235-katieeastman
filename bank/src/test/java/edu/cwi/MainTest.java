@@ -1,4 +1,4 @@
-package cwi.edu;
+package edu.cwi;
 
 import static org.junit.Assert.assertTrue;
 
