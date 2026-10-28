@@ -3,7 +3,6 @@ import io.javalin.apibuilder.CrudHandler;
 import io.javalin.http.Context;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
-import static j2html.TagCreator.*;
 
 public class TransactionsController implements CrudHandler {
     
@@ -11,27 +10,7 @@ public class TransactionsController implements CrudHandler {
 
     @Override
     public void getAll(Context ctx) {
-        String html = html(
-            head(
-                title("Transactions")
-            ),
-            body(
-                h1("Transactions"),
-                h2("All transactions:"),
-
-                ol(
-                    each(transactions.values(), transaction ->
-                        li(
-                            p(transaction)
-                        )
-                    )
-                )
-
-            )
-        ).render();
-
-        ctx.contentType("text/html");
-        ctx.result(html);
+        ctx.render("jte/transactionsPage.jte", Map.of("transactions", transactions));
     }
 
     @Override
