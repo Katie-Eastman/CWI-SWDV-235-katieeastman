@@ -10,7 +10,10 @@ public class TransactionsController implements CrudHandler {
 
     @Override
     public void getAll(Context ctx) {
-        ctx.render("jte/transactionsPage.jte", Map.of("transactions", transactions));
+
+        UserAccount account = new UserAccount("John Public", 500.00, transactions);
+        
+        ctx.render("jte/accountPage.jte", Map.of("title", "Account Transactions", "account", account));
     }
 
     @Override
@@ -28,12 +31,16 @@ public class TransactionsController implements CrudHandler {
     @Override
     public void create(Context ctx) {
 
-        String body = ctx.body();
-        String id = String.valueOf(transactions.size() + 1);
+        String description = ctx.formParam("description");
 
-        transactions.put(id, body);
+        if (description != null && !description.isBlank()) {
 
-		// Use ctx to render all transactions html
+            String id = String.valueOf(transactions.size() + 1);
+
+            transactions.put(id, description);
+        }
+
+        ctx.redirect("/transactions");
     }
 
     @Override
