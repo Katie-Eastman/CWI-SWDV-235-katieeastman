@@ -1,28 +1,31 @@
+
 package edu.cwi;
+
 import io.javalin.apibuilder.CrudHandler;
 import io.javalin.http.Context;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.Map;
+import io.javalin.http.UnauthorizedResponse;
 
 public class TransactionsController implements CrudHandler {
-    
-    private final Map<String, String> transactions = new ConcurrentHashMap<>();
 
     @Override
     public void getAll(Context ctx) {
 
-        UserAccount account = new UserAccount("John Public", 500.00, transactions);
-        
-        ctx.render("jte/accountPage.jte", Map.of("title", "Account Transactions", "account", account));
+        // Return to the logged-in user's account
+        ctx.redirect("/account");
     }
 
     @Override
     public void getOne(Context ctx, String resourceId) {
 
-        String user = transactions.get(resourceId);
+        String userId = ctx.cookieStore().get("user-id");
 
-        if (user != null) {
-            // Use ctx to render transaction html
+        UserAccount account = AuthController.getUser(userId)
+            .orElseThrow(UnauthorizedResponse::new);
+
+        String transaction = account.transactions().get(resourceId);
+
+        if (transaction != null) {
+            ctx.result(transaction);
         } else {
             ctx.status(404).result("Transaction not found");
         }
@@ -31,25 +34,47 @@ public class TransactionsController implements CrudHandler {
     @Override
     public void create(Context ctx) {
 
+        // Find the currently logged-in user
+        String userId = ctx.cookieStore().get("user-id");
+
+        UserAccount account = AuthController.getUser(userId)
+            .orElseThrow(UnauthorizedResponse::new);
+
+        // Get the transaction description from the form
         String description = ctx.formParam("description");
 
         if (description != null && !description.isBlank()) {
 
-            String id = String.valueOf(transactions.size() + 1);
+            // Create a new transaction ID
+            String id = String.valueOf(
+                account.transactions().size() + 1
+            );
 
-            transactions.put(id, description);
+            // Save the transaction to THIS user's account
+            account.transactions().put(id, description);
         }
 
-        ctx.redirect("/transactions");
+        // Return to the same user's account
+        ctx.redirect("/account");
     }
 
     @Override
     public void update(Context ctx, String resourceId) {
 
-        if (transactions.containsKey(resourceId)) {
-            transactions.put(resourceId, ctx.body());
+        String userId = ctx.cookieStore().get("user-id");
 
-            // Use ctx to render all transactions html
+        UserAccount account = AuthController.getUser(userId)
+            .orElseThrow(UnauthorizedResponse::new);
+
+        if (account.transactions().containsKey(resourceId)) {
+
+            account.transactions().put(
+                resourceId,
+                ctx.body()
+            );
+
+            ctx.redirect("/account");
+
         } else {
             ctx.status(404).result("Transaction not found");
         }
@@ -58,9 +83,13 @@ public class TransactionsController implements CrudHandler {
     @Override
     public void delete(Context ctx, String resourceId) {
 
-        transactions.remove(resourceId);
+        String userId = ctx.cookieStore().get("user-id");
 
-		// Use ctx to render all transactions html
+        UserAccount account = AuthController.getUser(userId)
+            .orElseThrow(UnauthorizedResponse::new);
+
+        account.transactions().remove(resourceId);
+
+        ctx.redirect("/account");
     }
-
 }
