@@ -54,6 +54,9 @@ public class Main {
                 // Existing transaction routes
                 crud("transactions/{id}", new TransactionsController());
 
+                // User routes
+                crud("users/{id}", new UsersController());
+
             });
 
         }).start(7070);
