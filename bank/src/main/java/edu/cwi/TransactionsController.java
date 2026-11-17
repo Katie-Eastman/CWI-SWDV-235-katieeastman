@@ -1,9 +1,16 @@
-
 package edu.cwi;
 
 import io.javalin.apibuilder.CrudHandler;
 import io.javalin.http.Context;
-import io.javalin.http.UnauthorizedResponse;
+import edu.cwi.data.Account;
+import edu.cwi.data.AccountMapper;
+import edu.cwi.data.Transaction;
+import edu.cwi.data.TransactionMapper;
+import edu.cwi.data.MyBatisConfig;
+import java.math.BigDecimal;
+import java.util.List;
+import org.apache.ibatis.session.SqlSession;
+
 
 public class TransactionsController implements CrudHandler {
 
@@ -11,85 +18,78 @@ public class TransactionsController implements CrudHandler {
     public void getAll(Context ctx) {
 
         // Return to the logged-in user's account
-        ctx.redirect("/account");
+        ctx.redirect("/accounts");
     }
 
     @Override
     public void getOne(Context ctx, String resourceId) {
 
-        String userId = ctx.cookieStore().get("user-id");
+        try (SqlSession session =
+                MyBatisConfig.getSqlSessionFactory().openSession()) {
 
-        UserAccount account = AuthController.getUser(userId)
-            .orElseThrow(UnauthorizedResponse::new);
+            TransactionMapper mapper =
+                session.getMapper(TransactionMapper.class);
 
-        String transaction = account.transactions().get(resourceId);
+            Transaction transaction =
+                mapper.getById(Long.parseLong(resourceId));
 
-        if (transaction != null) {
-            ctx.result(transaction);
-        } else {
-            ctx.status(404).result("Transaction not found");
+            if (transaction != null) {
+                ctx.json(transaction);
+            } else {
+                ctx.status(404).result("Transaction not found");
+            }
         }
     }
 
     @Override
     public void create(Context ctx) {
 
-        // Find the currently logged-in user
         String userId = ctx.cookieStore().get("user-id");
 
-        UserAccount account = AuthController.getUser(userId)
-            .orElseThrow(UnauthorizedResponse::new);
+        int id = Integer.parseInt(userId);
 
-        // Get the transaction description from the form
         String description = ctx.formParam("description");
 
         if (description != null && !description.isBlank()) {
 
-            // Create a new transaction ID
-            String id = String.valueOf(
-                account.transactions().size() + 1
-            );
+            try (SqlSession session =
+                    MyBatisConfig.getSqlSessionFactory().openSession()) {
 
-            // Save the transaction to THIS user's account
-            account.transactions().put(id, description);
+                AccountMapper accountMapper =
+                    session.getMapper(AccountMapper.class);
+
+                TransactionMapper transactionMapper =
+                    session.getMapper(TransactionMapper.class);
+
+                List<Account> accounts =
+                    accountMapper.getByUserId(id);
+
+                if (!accounts.isEmpty()) {
+
+                    Transaction transaction = new Transaction();
+
+                    transaction.setAccountId(accounts.get(0).getId());
+                    transaction.setTransactionType("DEPOSIT");
+                    transaction.setAmount(new BigDecimal("1.00"));
+                    transaction.setDescription(description);
+
+                    transactionMapper.insert(transaction);
+
+                    session.commit();
+                }
+            }
         }
 
-        // Return to the same user's account
-        ctx.redirect("/account");
+        ctx.redirect("/accounts");
     }
 
     @Override
     public void update(Context ctx, String resourceId) {
-
-        String userId = ctx.cookieStore().get("user-id");
-
-        UserAccount account = AuthController.getUser(userId)
-            .orElseThrow(UnauthorizedResponse::new);
-
-        if (account.transactions().containsKey(resourceId)) {
-
-            account.transactions().put(
-                resourceId,
-                ctx.body()
-            );
-
-            ctx.redirect("/account");
-
-        } else {
-            ctx.status(404).result("Transaction not found");
-        }
+        ctx.status(405).result("Updating transactions is not supported.");
     }
 
     @Override
     public void delete(Context ctx, String resourceId) {
-
-        String userId = ctx.cookieStore().get("user-id");
-
-        UserAccount account = AuthController.getUser(userId)
-            .orElseThrow(UnauthorizedResponse::new);
-
-        account.transactions().remove(resourceId);
-
-        ctx.redirect("/account");
+        ctx.status(405).result("Deleting transactions is not supported.");
     }
 }

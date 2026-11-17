@@ -3,51 +3,9 @@ package edu.cwi;
 import edu.cwi.data.User;
 import io.javalin.http.Context;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class AuthController {
 
-    // Temporary account data for the existing account page
-    private static final Map<String, UserAccount> accountMap = Map.of(
-        "ajones",
-        new UserAccount(
-            "94f6901f-cd0f-4c90-81dc-3601a071c077",
-            "Alice Jones",
-            AppRole.CUSTOMER,
-            750.00,
-            new ConcurrentHashMap<>(
-                Map.of("1", "Deposited $750.00")
-            )
-        ),
-
-        "bjones",
-        new UserAccount(
-            "99377dc1-617d-45bd-b5fe-ac6418f06f43",
-            "Bob Jones",
-            AppRole.CUSTOMER,
-            500.00,
-            new ConcurrentHashMap<>(
-                Map.of("1", "Deposited $500.00")
-            )
-        )
-    );
-
-    public static Optional<UserAccount> getUser(String id) {
-
-        Collection<UserAccount> accounts = accountMap.values();
-
-        for (UserAccount account : accounts) {
-            if (account.id().equals(id)) {
-                return Optional.of(account);
-            }
-        }
-
-        return Optional.empty();
-    }
 
     public static void authenticate(Context ctx) {
 
@@ -63,7 +21,7 @@ public class AuthController {
             ctx.cookieStore().set("user-id", user.getId());
             ctx.cookieStore().set("user-role", user.getRole());
 
-            ctx.redirect("/account");
+            ctx.redirect("/accounts");
         }
         else {
 

@@ -52,11 +52,7 @@
                     </p>
 
                     <small class="text-center">
-                        Alice: ajones / weak
-                    </small>
-
-                    <small class="text-center">
-                        Bob: bjones / weak
+                        Test: test / password
                     </small>
 
                 </div>

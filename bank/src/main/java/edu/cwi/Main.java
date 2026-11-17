@@ -1,11 +1,9 @@
 package edu.cwi;
 
 import static io.javalin.apibuilder.ApiBuilder.*;
-
 import io.javalin.Javalin;
 import io.javalin.http.UnauthorizedResponse;
 import io.javalin.rendering.template.JavalinJte;
-
 import java.util.List;
 
 public class Main {
@@ -46,9 +44,13 @@ public class Main {
                 // Public logout route
                 post("/logout", AuthController::logout);
 
-                // Protected account route
-                path("/account", List.of(AppRole.CUSTOMER), () -> {
-                    get(AccountController::renderAccount);
+                // Protected accounts routes
+                path("/", List.of(AppRole.CUSTOMER), () -> {
+
+                    get("/accounts", AccountController::renderAccounts);
+
+                    get("/account/{id}", AccountController::renderAccountDetail);
+
                 });
 
                 // Existing transaction routes
