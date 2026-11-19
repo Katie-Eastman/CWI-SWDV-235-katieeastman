@@ -63,6 +63,75 @@
 
     </div>
 
+
+    <!-- Create a New Transaction -->
+    <div class="card shadow p-4 mb-4">
+
+        <h3 class="mb-3">Create a New Transaction</h3>
+
+        <form action="/transactions" method="post">
+
+            <input
+                type="hidden"
+                name="accountId"
+                value="${account.getId()}"
+            >
+
+            <div class="mb-3">
+                <label for="transactionType" class="form-label">
+                    Transaction Type
+                </label>
+
+                <select
+                    class="form-select"
+                    id="transactionType"
+                    name="transactionType"
+                    required
+                >
+                    <option value="DEPOSIT">Deposit</option>
+                    <option value="WITHDRAWAL">Withdrawal</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="amount" class="form-label">
+                    Amount
+                </label>
+
+                <input
+                    type="number"
+                    class="form-control"
+                    id="amount"
+                    name="amount"
+                    min="0.01"
+                    step="0.01"
+                    required
+                >
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">
+                    Description
+                </label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    id="description"
+                    name="description"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                Submit Transaction
+            </button>
+
+        </form>
+
+    </div>
+
+
     <!-- Transaction history -->
     <div class="card shadow p-4 mb-4">
 

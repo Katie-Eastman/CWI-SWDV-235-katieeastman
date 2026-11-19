@@ -6,7 +6,7 @@ import java.util.List;
 @SuppressWarnings("unchecked")
 public final class JteaccountDetailPageGenerated {
 	public static final String JTE_NAME = "jte/accountDetailPage.jte";
-	public static final int[] JTE_LINE_INFO = {0,0,1,2,3,5,5,5,5,16,16,16,16,28,33,33,33,33,33,33,44,51,51,51,56,56,56,60,60,60,65,70,70,76,76,91,91,94,94,94,95,95,95,96,96,96,97,97,97,100,100,106,106,110,121,121,121,5,6,7,8,8,8,8};
+	public static final int[] JTE_LINE_INFO = {0,0,1,2,3,5,5,5,5,16,16,16,16,28,33,33,33,33,33,33,44,51,51,51,56,56,56,60,60,60,66,76,76,76,76,76,76,76,76,76,134,139,139,145,145,160,160,163,163,163,164,164,164,165,165,165,166,166,166,169,169,175,175,179,190,190,190,5,6,7,8,8,8,8};
 	public static void render(gg.jte.html.HtmlTemplateOutput jteOutput, gg.jte.html.HtmlInterceptor jteHtmlInterceptor, String title, User user, Account account, List<Transaction> transactions) {
 		jteOutput.writeContent("\n<!doctype html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n\n    <title>");
 		jteOutput.setContext("title", null);
@@ -28,7 +28,17 @@ public final class JteaccountDetailPageGenerated {
 		jteOutput.writeContent("\n        </p>\n\n        <h4 class=\"text-success\">\n            Balance: $");
 		jteOutput.setContext("h4", null);
 		jteOutput.writeUserContent(account.getBalance());
-		jteOutput.writeContent("\n        </h4>\n\n    </div>\n\n    ");
+		jteOutput.writeContent("\n        </h4>\n\n    </div>\n\n\n    ");
+		jteOutput.writeContent("\n    <div class=\"card shadow p-4 mb-4\">\n\n        <h3 class=\"mb-3\">Create a New Transaction</h3>\n\n        <form action=\"/transactions\" method=\"post\">\n\n            <input\n                type=\"hidden\"\n                name=\"accountId\"\n               ");
+		var __jte_html_attribute_0 = account.getId();
+		if (gg.jte.runtime.TemplateUtils.isAttributeRendered(__jte_html_attribute_0)) {
+			jteOutput.writeContent(" value=\"");
+			jteOutput.setContext("input", "value");
+			jteOutput.writeUserContent(__jte_html_attribute_0);
+			jteOutput.setContext("input", null);
+			jteOutput.writeContent("\"");
+		}
+		jteOutput.writeContent("\n            >\n\n            <div class=\"mb-3\">\n                <label for=\"transactionType\" class=\"form-label\">\n                    Transaction Type\n                </label>\n\n                <select\n                    class=\"form-select\"\n                    id=\"transactionType\"\n                    name=\"transactionType\"\n                    required\n                >\n                    <option value=\"DEPOSIT\">Deposit</option>\n                    <option value=\"WITHDRAWAL\">Withdrawal</option>\n                </select>\n            </div>\n\n            <div class=\"mb-3\">\n                <label for=\"amount\" class=\"form-label\">\n                    Amount\n                </label>\n\n                <input\n                    type=\"number\"\n                    class=\"form-control\"\n                    id=\"amount\"\n                    name=\"amount\"\n                    min=\"0.01\"\n                    step=\"0.01\"\n                    required\n                >\n            </div>\n\n            <div class=\"mb-3\">\n                <label for=\"description\" class=\"form-label\">\n                    Description\n                </label>\n\n                <input\n                    type=\"text\"\n                    class=\"form-control\"\n                    id=\"description\"\n                    name=\"description\"\n                    required\n                >\n            </div>\n\n            <button type=\"submit\" class=\"btn btn-success\">\n                Submit Transaction\n            </button>\n\n        </form>\n\n    </div>\n\n\n    ");
 		jteOutput.writeContent("\n    <div class=\"card shadow p-4 mb-4\">\n\n        <h3 class=\"mb-3\">Transaction History</h3>\n\n        ");
 		if (transactions.isEmpty()) {
 			jteOutput.writeContent("\n\n            <p class=\"text-muted\">\n                No transactions to display.\n            </p>\n\n        ");

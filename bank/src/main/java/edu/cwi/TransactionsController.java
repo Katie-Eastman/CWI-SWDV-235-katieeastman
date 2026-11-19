@@ -8,7 +8,6 @@ import edu.cwi.data.Transaction;
 import edu.cwi.data.TransactionMapper;
 import edu.cwi.data.MyBatisConfig;
 import java.math.BigDecimal;
-import java.util.List;
 import org.apache.ibatis.session.SqlSession;
 
 
@@ -41,47 +40,67 @@ public class TransactionsController implements CrudHandler {
         }
     }
 
+    
     @Override
     public void create(Context ctx) {
 
-        String userId = ctx.cookieStore().get("user-id");
+        // Get the logged-in user's ID
+        int userId = ctx.cookieStore().get("user-id");
 
-        int id = Integer.parseInt(userId);
+        // Get the account ID from the URL
+        int accountId = Integer.parseInt(ctx.formParam("accountId"));
 
+        // Get transaction information from the submitted form
+        String transactionType = ctx.formParam("transactionType");
+        String amount = ctx.formParam("amount");
         String description = ctx.formParam("description");
 
-        if (description != null && !description.isBlank()) {
+        // Validate the form information
+        if (transactionType == null || transactionType.isBlank()
+                || amount == null || amount.isBlank()
+                || description == null || description.isBlank()) {
 
-            try (SqlSession session =
-                    MyBatisConfig.getSqlSessionFactory().openSession()) {
-
-                AccountMapper accountMapper =
-                    session.getMapper(AccountMapper.class);
-
-                TransactionMapper transactionMapper =
-                    session.getMapper(TransactionMapper.class);
-
-                List<Account> accounts =
-                    accountMapper.getByUserId(id);
-
-                if (!accounts.isEmpty()) {
-
-                    Transaction transaction = new Transaction();
-
-                    transaction.setAccountId(accounts.get(0).getId());
-                    transaction.setTransactionType("DEPOSIT");
-                    transaction.setAmount(new BigDecimal("1.00"));
-                    transaction.setDescription(description);
-
-                    transactionMapper.insert(transaction);
-
-                    session.commit();
-                }
-            }
+            ctx.status(400).result("Please complete all transaction fields.");
+            return;
         }
 
-        ctx.redirect("/accounts");
+        try (SqlSession session =
+                MyBatisConfig.getSqlSessionFactory().openSession()) {
+
+            AccountMapper accountMapper =
+                session.getMapper(AccountMapper.class);
+
+            TransactionMapper transactionMapper =
+                session.getMapper(TransactionMapper.class);
+
+            // Retrieve the selected account
+            Account account = accountMapper.getById(accountId);
+
+            // Verify account ownership
+            if (account == null || account.getUserId() != userId) {
+                ctx.status(404).result("Account not found");
+                return;
+            }
+
+            // Create a new transaction
+            Transaction transaction = new Transaction();
+
+            transaction.setAccountId(accountId);
+            transaction.setTransactionType(transactionType);
+            transaction.setAmount(new BigDecimal(amount));
+            transaction.setDescription(description);
+
+            // Insert the transaction into the database
+            transactionMapper.insert(transaction);
+
+            // Save the database changes
+            session.commit();
+        }
+
+        // Return to the account detail page
+        ctx.redirect("/account/" + accountId);
     }
+
 
     @Override
     public void update(Context ctx, String resourceId) {
